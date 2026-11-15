@@ -103,7 +103,7 @@
     </div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyc-2laZqplcNNdxhNo5HKRQmonYaOjyCgV-C4wmGqKYAlRX4fkocPx4KXa_6d6yUL76w/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxT-sb8JAkgY2VuL1o8A65iBviC73kXrkBNAvj5IO8j9hm5_pvxazkNnrYGgeFSo1Hq/exec";
 
         let allJobs = [];
         window.currentUserRole = 'seeker';
@@ -171,7 +171,7 @@
                 allJobs = await res.json();
                 document.getElementById('loading').style.display = 'none';
                 renderJobs(allJobs.reverse());
-            } catch (err) {
+            } else {
                 document.getElementById('loading').innerText = "डेटा लोड करने में समस्या आई। कृपया इंटरनेट जांचें।";
             }
         }
@@ -226,7 +226,7 @@
 
             const data = {
                 title: document.getElementById('title').value,
-                location: document.getElementById('location').value,
+                location: document.getElementById('location'.value,
                 salary: document.getElementById('salary').value,
                 desc: document.getElementById('desc').value,
                 phone: document.getElementById('phone').value,
