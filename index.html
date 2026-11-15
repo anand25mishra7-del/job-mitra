@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job मित्र (Job Mitra)</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f6f9; color: #333; padding-bottom: 90px; }
+        .header { background-color: #1a56db; color: white; text-align: center; padding: 20px 15px; }
+        .header h1 { margin: 0; font-size: 24px; }
+        .header p { margin: 5px 0 0; font-size: 14px; opacity: 0.9; }
+        .role-box { background: white; margin: 15px; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); text-align: center; }
+        .role-btns { display: flex; gap: 10px; margin-top: 10px; }
+        .role-btns button { flex: 1; padding: 10px; border: 2px solid #1a56db; border-radius: 8px; font-weight: bold; cursor: pointer; background: white; color: #1a56db; font-size: 13px; }
+        .role-btns button.active { background: #1a56db; color: white; }
+        .search-bar { padding: 0 15px; margin-bottom: 15px; }
+        .search-bar input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 15px; }
+        .job-card { background: white; margin: 15px; padding: 18px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border-left: 5px solid #1a56db; position: relative; }
+        .job-title { font-size: 20px; font-weight: bold; margin: 0 0 8px; }
+        .badges { display: flex; gap: 8px; margin-bottom: 10px; font-size: 12px; flex-wrap: wrap; }
+        .badge-loc { background: #e0e7ff; color: #1e40af; padding: 4px 10px; border-radius: 15px; }
+        .badge-sal { background: #dcfce7; color: #166534; padding: 4px 10px; border-radius: 15px; font-weight: bold; }
+        .badge-role { background: #f3e8ff; color: #6b21a8; padding: 4px 10px; border-radius: 15px; font-weight: bold; }
+        .job-desc { font-size: 14px; color: #555; margin-bottom: 15px; line-height: 1.4; }
+        .action-btns { display: flex; gap: 10px; }
+        .btn-call, .btn-wa { flex: 1; text-align: center; padding: 10px; border-radius: 8px; text-decoration: none; color: white; font-weight: bold; font-size: 15px; }
+        .btn-call { background-color: #16a34a; }
+        .btn-wa { background-color: #25d366; }
+        .form-section { display: none; background: white; margin: 15px; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 14px; }
+        .form-group input, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 15px; }
+        .submit-btn { width: 100%; background: #1a56db; color: white; border: none; padding: 14px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; }
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: white; display: flex; border-top: 1px solid #ddd; box-shadow: 0 -2px 5px rgba(0,0,0,0.05); z-index: 99999; }
+        .nav-item { flex: 1; text-align: center; padding: 14px; font-weight: bold; color: #555; cursor: pointer; font-size: 14px; }
+        .nav-item.active { color: #1a56db; border-bottom: 3px solid #1a56db; }
+        #loading { text-align: center; padding: 20px; color: #666; font-weight: bold; }
+        
+        /* Netlify Badge Universal Killer CSS */
+        body > iframe, body > div[style*="z-index"], a[href*="netlify.com/support"] {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Job मित्र (Job Mitra)</h1>
+        <p>अपने क्षेत्र में नौकरी खोजें या उम्मीदवार ढूंढें</p>
+    </div>
+
+    <div class="role-box">
+        <strong>आप कौन हैं? (चुनें)</strong>
+        <div class="role-btns">
+            <button id="btn-seeker" class="active" onclick="setRole('seeker')">🔍 नौकरी ढूंढ रहा हूँ</button>
+            <button id="btn-owner" onclick="setRole('owner')">🏢 काम/नौकरी देनी है</button>
+        </div>
+    </div>
+
+    <!-- Listings View -->
+    <div id="jobs-view">
+        <div class="search-bar">
+            <input type="text" id="searchInput" onkeyup="filterJobs()" placeholder="जॉब, स्किल या शहर खोजें (जैसे: ड्राइवर, दिल्ली)">
+        </div>
+        <div id="loading">डेटा लोड हो रहा है...</div>
+        <div id="jobs-container"></div>
+    </div>
+
+    <!-- Post Form View -->
+    <div id="post-view" class="form-section">
+        <h2 id="form-heading" style="margin-top:0;">अपनी प्रोफाइल डालें (Job Seeker)</h2>
+        <form id="jobForm" onsubmit="submitJob(event)">
+            <div class="form-group">
+                <label id="label-title">आपकी स्किल / पद का नाम (जैसे: Driver, Helper)*</label>
+                <input type="text" id="title" required placeholder="जैसे: ड्राइवर, डिलीवरी बॉय">
+            </div>
+            <div class="form-group">
+                <label>शहर / पता (Location)*</label>
+                <input type="text" id="location" required placeholder="जैसे: जयपुर, नोएडा">
+            </div>
+            <div class="form-group">
+                <label id="label-sal">अपेक्षित सैलरी (Expected Salary)*</label>
+                <input type="text" id="salary" required placeholder="जैसे: ₹15,000 प्रति माह">
+            </div>
+            <div class="form-group">
+                <label id="label-desc">अपने बारे में या काम की जानकारी*</label>
+                <textarea id="desc" rows="3" required placeholder="अपने अनुभव या काम के बारे में विवरण लिखें"></textarea>
+            </div>
+            <div class="form-group">
+                <label>आपका मोबाइल / WhatsApp नंबर*</label>
+                <input type="tel" id="phone" required placeholder="10 अंकों का मोबाइल नंबर">
+            </div>
+            <button type="submit" class="submit-btn" id="submitBtn">प्रोफाइल पोस्ट करें</button>
+        </form>
+    </div>
+
+    <div class="bottom-nav">
+        <div class="nav-item active" id="nav-search" onclick="switchTab('search')">🔍 सभी देखें</div>
+        <div class="nav-item" id="nav-post" onclick="switchTab('post')">➕ पोस्ट करें</div>
+    </div>
+
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyc-2laZqplcNNdxhNo5HKRQmonYaOjyCgV-C4wmGqKYAlRX4fkocPx4KXa_6d6yUL76w/exec";
+
+        let allJobs = [];
+        window.currentUserRole = 'seeker';
+
+        // Netlify Badge Killer
+        window.addEventListener('DOMContentLoaded', () => {
+            setInterval(() => {
+                document.querySelectorAll('iframe').forEach(el => {
+                    if(el.src && el.src.includes('netlify')) el.remove();
+                });
+                document.querySelectorAll('div').forEach(el => {
+                    if(el.innerHTML && el.innerHTML.includes('Powered by Netlify')) el.remove();
+                });
+            }, 200);
+        });
+
+        function setRole(role) {
+            window.currentUserRole = role;
+            document.getElementById('btn-seeker').classList.remove('active');
+            document.getElementById('btn-owner').classList.remove('active');
+            
+            const formHeading = document.getElementById('form-heading');
+            const labelTitle = document.getElementById('label-title');
+            const labelSal = document.getElementById('label-sal');
+            const labelDesc = document.getElementById('label-desc');
+            const submitBtn = document.getElementById('submitBtn');
+
+            if(role === 'seeker') {
+                document.getElementById('btn-seeker').classList.add('active');
+                formHeading.innerText = "अपनी जॉब प्रोफाइल डालें (Job Seeker)";
+                labelTitle.innerText = "आपकी स्किल / पद का नाम (जैसे: Driver, Helper)*";
+                labelSal.innerText = "अपेक्षित सैलरी (Expected Salary)*";
+                labelDesc.innerText = "अपने अनुभव और जानकारी के बारे में लिखें*";
+                submitBtn.innerText = "अपनी प्रोफाइल पोस्ट करें";
+            } else {
+                document.getElementById('btn-owner').classList.add('active');
+                formHeading.innerText = "नई नौकरी पोस्ट करें (Business Owner)";
+                labelTitle.innerText = "पद का नाम (Job Title)*";
+                labelSal.innerText = "सैलरी (Salary)*";
+                labelDesc.innerText = "काम के बारे में जानकारी और समय*";
+                submitBtn.innerText = "नौकरी पोस्ट करें";
+            }
+            switchTab('post');
+        }
+
+        function switchTab(tab) {
+            if(tab === 'search') {
+                document.getElementById('jobs-view').style.display = 'block';
+                document.getElementById('post-view').style.display = 'none';
+                document.getElementById('nav-search').classList.add('active');
+                document.getElementById('nav-post').classList.remove('active');
+                loadJobs();
+            } else {
+                document.getElementById('jobs-view').style.display = 'none';
+                document.getElementById('post-view').style.display = 'block';
+                document.getElementById('nav-post').classList.add('active');
+                document.getElementById('nav-search').classList.remove('active');
+            }
+        }
+
+        async function loadJobs() {
+            try {
+                document.getElementById('loading').style.display = 'block';
+                const res = await fetch(SCRIPT_URL);
+                allJobs = await res.json();
+                document.getElementById('loading').style.display = 'none';
+                renderJobs(allJobs.reverse());
+            } catch (err) {
+                document.getElementById('loading').innerText = "डेटा लोड करने में समस्या आई। कृपया इंटरनेट जांचें।";
+            }
+        }
+
+        function renderJobs(jobs) {
+            const container = document.getElementById('jobs-container');
+            container.innerHTML = '';
+            if(!jobs || jobs.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:#666; margin-top:20px;">अभी कोई पोस्ट उपलब्ध नहीं है।</p>';
+                return;
+            }
+            jobs.forEach(job => {
+                let roleText = job.userType === 'owner' ? '🏢 Business Owner (नौकरी दे रहे हैं)' : '👤 Job Seeker (काम ढूंढ रहे हैं)';
+                let waText = job.userType === 'owner' 
+                    ? `नमस्ते, मैंने Job Mitra पर आपकी '${job.title}' वाली नौकरी की पोस्ट देखी है।` 
+                    : `नमस्ते, मैंने Job Mitra पर आपकी '${job.title}' वाली प्रोफाइल देखी है।`;
+
+                container.innerHTML += `
+                    <div class="job-card">
+                        <div class="job-title">${job.title || 'पद'}</div>
+                        <div class="badges">
+                            <span class="badge-loc">📍 ${job.location || 'N/A'}</span>
+                            <span class="badge-sal">💰 ${job.salary || 'N/A'}</span>
+                            <span class="badge-role">${roleText}</span>
+                        </div>
+                        <div class="job-desc">${job.desc || ''}</div>
+                        <div class="action-btns">
+                            <a href="tel:${job.phone}" class="btn-call">📞 कॉल करें</a>
+                            <a href="https://wa.me/91${job.phone}?text=${encodeURIComponent(waText)}" target="_blank" class="btn-wa">💬 WhatsApp</a>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function filterJobs() {
+            const q = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = allJobs.filter(j => 
+                (j.title && j.title.toLowerCase().includes(q)) || 
+                (j.location && j.location.toLowerCase().includes(q)) ||
+                (j.desc && j.desc.toLowerCase().includes(q)) ||
+                (j.userType && j.userType.toLowerCase().includes(q))
+            );
+            renderJobs(filtered);
+        }
+
+        async function submitJob(e) {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            btn.innerText = "पोस्ट हो रहा है...";
+            btn.disabled = true;
+
+            const data = {
+                title: document.getElementById('title').value,
+                location: document.getElementById('location').value,
+                salary: document.getElementById('salary').value,
+                desc: document.getElementById('desc').value,
+                phone: document.getElementById('phone').value,
+                userType: window.currentUserRole
+            };
+
+            try {
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                alert("बधाई हो! आपकी जानकारी सफलतापूर्वक पोस्ट हो गई है और अब सबको दिखेगी।");
+                document.getElementById('jobForm').reset();
+                switchTab('search');
+            } catch (err) {
+                alert("पोस्ट करने में समस्या आई, कृपया दोबारा प्रयास करें।");
+            }
+            btn.innerText = "पोस्ट करें";
+            btn.disabled = false;
+        }
+
+        loadJobs();
+    </script>
+</body>
+</html>
