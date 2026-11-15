@@ -35,14 +35,6 @@
         .nav-item { flex: 1; text-align: center; padding: 14px; font-weight: bold; color: #555; cursor: pointer; font-size: 14px; }
         .nav-item.active { color: #1a56db; border-bottom: 3px solid #1a56db; }
         #loading { text-align: center; padding: 20px; color: #666; font-weight: bold; }
-        
-        /* Netlify Badge Universal Killer CSS */
-        body > iframe, body > div[style*="z-index"], a[href*="netlify.com/support"] {
-            display: none !important;
-            visibility: hidden !important;
-            opacity: 0 !important;
-            pointer-events: none !important;
-        }
     </style>
 </head>
 <body>
@@ -108,18 +100,6 @@
         let allJobs = [];
         window.currentUserRole = 'seeker';
 
-        // Netlify Badge Killer
-        window.addEventListener('DOMContentLoaded', () => {
-            setInterval(() => {
-                document.querySelectorAll('iframe').forEach(el => {
-                    if(el.src && el.src.includes('netlify')) el.remove();
-                });
-                document.querySelectorAll('div').forEach(el => {
-                    if(el.innerHTML && el.innerHTML.includes('Powered by Netlify')) el.remove();
-                });
-            }, 200);
-        });
-
         function setRole(role) {
             window.currentUserRole = role;
             document.getElementById('btn-seeker').classList.remove('active');
@@ -171,7 +151,7 @@
                 allJobs = await res.json();
                 document.getElementById('loading').style.display = 'none';
                 renderJobs(allJobs.reverse());
-            } else {
+            } catch (err) {
                 document.getElementById('loading').innerText = "डेटा लोड करने में समस्या आई। कृपया इंटरनेट जांचें।";
             }
         }
@@ -226,7 +206,7 @@
 
             const data = {
                 title: document.getElementById('title').value,
-                location: document.getElementById('location'.value,
+                location: document.getElementById('location').value,
                 salary: document.getElementById('salary').value,
                 desc: document.getElementById('desc').value,
                 phone: document.getElementById('phone').value,
